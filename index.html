@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kasir Coffee Shop</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #2B1E1A;
+      --bg-card: #3D2B1F;
+      --accent: #D4A373;
+      --accent-hover: #FAEDCD;
+      --text-light: #FEFAE0;
+      --text-muted: #CCD5AE;
+      --bg-body: #1F1513;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-light);
+    }
+
+    .navbar {
+      background-color: var(--bg-dark);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .card-menu {
+      background-color: var(--bg-card);
+      border: 1px solid rgba(212, 163, 115, 0.2);
+      border-radius: 12px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .card-menu:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+
+    .btn-accent {
+      background-color: var(--accent);
+      color: var(--bg-dark);
+      font-weight: 600;
+    }
+
+    .btn-accent:hover {
+      background-color: var(--accent-hover);
+      color: var(--bg-dark);
+    }
+
+    .btn-outline-accent {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-outline-accent:hover, .btn-outline-accent.active {
+      background-color: var(--accent);
+      color: var(--bg-dark);
+    }
+
+    .cart-section {
+      background-color: var(--bg-dark);
+      border-radius: 16px;
+      border: 1px solid rgba(212, 163, 115, 0.3);
+      position: sticky;
+      top: 20px;
+    }
+
+    .form-control, .form-select {
+      background-color: var(--bg-card);
+      border: 1px solid rgba(212, 163, 115, 0.3);
+      color: var(--text-light);
+    }
+
+    .form-control:focus, .form-select:focus {
+      background-color: var(--bg-card);
+      border-color: var(--accent);
+      color: var(--text-light);
+      box-shadow: none;
+    }
+
+    .badge-category {
+      background-color: rgba(212, 163, 115, 0.2);
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body class="pb-5">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark mb-4">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand fw-bold fs-4" href="#">
+        <i class="fa-solid fa-mug-hot me-2 text-warning"></i> Coffeeria POS
+      </a>
+      <span class="badge badge-category fs-6 px-3 py-2"><i class="fa-solid fa-store me-1"></i> Mode Kasir</span>
+    </div>
+  </nav>
+
+  <div class="container-fluid px-4">
+    <div class="row g-4">
+      
+      <!-- Katalog Produk Left Side -->
+      <div class="col-lg-7 col-xl-8">
+        <!-- Filter & Search -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-search"></i></span>
+              <input type="text" id="searchInput" class="form-control" placeholder="Cari menu kopi, snack..." onkeyup="filterProducts()">
+            </div>
+          </div>
+          <div class="col-md-6 d-flex gap-2 flex-wrap" id="categoryButtons">
+            <button class="btn btn-outline-accent active flex-fill" onclick="filterCategory('All', this)">Semua</button>
+            <button class="btn btn-outline-accent flex-fill" onclick="filterCategory('Coffee', this)">Coffee</button>
+            <button class="btn btn-outline-accent flex-fill" onclick="filterCategory('Non-Coffee', this)">Non-Coffee</button>
+            <button class="btn btn-outline-accent flex-fill" onclick="filterCategory('Snack', this)">Snack</button>
+            <button class="btn btn-outline-accent flex-fill" onclick="filterCategory('Beans', this)">Beans</button>
+          </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="row g-3" id="productContainer">
+          <div class="text-center py-5">
+            <div class="spinner-border text-warning" role="status"></div>
+            <p class="mt-2 text-muted">Memuat menu kopi...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cart / POS Right Side -->
+      <div class="col-lg-5 col-xl-4">
+        <div class="cart-section p-4">
+          <h4 class="fw-bold mb-3 d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-receipt me-2 text-warning"></i>Pesanan</span>
+            <button class="btn btn-sm btn-outline-danger" onclick="clearCart()"><i class="fa-solid fa-trash"></i> Reset</button>
+          </h4>
+
+          <!-- Customer Detail Form -->
+          <div class="row g-2 mb-3">
+            <div class="col-12">
+              <input type="text" id="custName" class="form-control form-control-sm" placeholder="Nama Pelanggan *" required>
+            </div>
+            <div class="col-6">
+              <select id="orderType" class="form-select form-select-sm" onchange="toggleTableInput()">
+                <option value="Dine-in">Dine-in</option>
+                <option value="Takeaway">Takeaway</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <input type="text" id="tableNum" class="form-control form-control-sm" placeholder="No. Meja">
+            </div>
+          </div>
+
+          <hr class="border-secondary">
+
+          <!-- Cart Items Container -->
+          <div id="cartItems" style="max-height: 280px; overflow-y: auto;" class="pe-1 mb-3">
+            <p class="text-center text-muted my-4">Keranjang masih kosong</p>
+          </div>
+
+          <hr class="border-secondary">
+
+          <!-- Total & Payment -->
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fs-5">Total Bayar:</span>
+            <span class="fs-4 fw-bold text-warning" id="totalAmount">Rp 0</span>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small text-muted">Metode Pembayaran</label>
+            <div class="d-flex gap-2">
+              <input type="radio" class="btn-check" name="payMethod" id="payCash" value="Cash" checked>
+              <label class="btn btn-outline-accent flex-fill btn-sm py-2" for="payCash"><i class="fa-solid fa-money-bill-wave me-1"></i> Cash</label>
+
+              <input type="radio" class="btn-check" name="payMethod" id="payQRIS" value="QRIS/Transfer">
+              <label class="btn btn-outline-accent flex-fill btn-sm py-2" for="payQRIS"><i class="fa-solid fa-qrcode me-1"></i> QRIS / EDC</label>
+            </div>
+          </div>
+
+          <button class="btn btn-accent w-100 py-3 text-uppercase fw-bold" onclick="submitOrder()" id="btnSubmit">
+            <i class="fa-solid fa-paper-plane me-2"></i> Proses Transaksi
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Varian/Opsi Produk -->
+  <div class="modal fade" id="variantModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-light border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold" id="modalProductName">Kopi</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="modalProductId">
+          
+          <div class="mb-3" id="tempOptionGroup">
+            <label class="form-label text-warning fw-bold">Suhu / Saji</label>
+            <select class="form-select" id="valTemp">
+              <option value="Iced">Iced</option>
+              <option value="Hot">Hot</option>
+            </select>
+          </div>
+
+          <div class="mb-3" id="sugarOptionGroup">
+            <label class="form-label text-warning fw-bold">Sugar Level</label>
+            <select class="form-select" id="valSugar">
+              <option value="Normal Sugar">Normal Sugar</option>
+              <option value="Less Sugar">Less Sugar</option>
+              <option value="No Sugar">No Sugar</option>
+            </select>
+          </div>
+
+          <div class="mb-3" id="iceOptionGroup">
+            <label class="form-label text-warning fw-bold">Ice Level</label>
+            <select class="form-select" id="valIce">
+              <option value="Normal Ice">Normal Ice</option>
+              <option value="Less Ice">Less Ice</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-accent" onclick="confirmAddToCart()">Tambah ke Keranjang</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    let products = [];
+    let cart = [];
+    let currentCategory = 'All';
+    let selectedProduct = null;
+    let variantModal = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      variantModal = new bootstrap.Modal(document.getElementById('variantModal'));
+      loadMenuData();
+    });
+
+    // Mengambil data produk dari backend GAS
+    function loadMenuData() {
+      google.script.run
+        .withSuccessHandler(data => {
+          products = data;
+          renderProducts();
+        })
+        .withFailureHandler(err => {
+          Swal.fire('Error', 'Gagal memuat data menu: ' + err, 'error');
+        })
+        .getMenuItems();
+    }
+
+    // Render daftar produk
+    function renderProducts() {
+      const container = document.getElementById('productContainer');
+      const searchKeyword = document.getElementById('searchInput').value.toLowerCase();
+
+      const filtered = products.filter(p => {
+        const matchCategory = currentCategory === 'All' || p.kategori === currentCategory;
+        const matchSearch = p.nama.toLowerCase().includes(searchKeyword);
+        return matchCategory && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-5 text-muted"><p>Tidak ada produk ditemukan.</p></div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(p => `
+        <div class="col-6 col-md-4 col-xl-3">
+          <div class="card card-menu h-100 p-3 d-flex flex-column justify-content-between">
+            <div>
+              <span class="badge badge-category mb-2">${p.kategori}</span>
+              <h6 class="fw-bold mb-1 text-light">${p.nama}</h6>
+              <p class="text-warning fw-bold mb-2">Rp ${p.harga.toLocaleString('id-ID')}</p>
+            </div>
+            <button class="btn btn-accent btn-sm w-100 mt-2" onclick="openVariantModal('${p.id}')">
+              <i class="fa-solid fa-plus me-1"></i> Pilih
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('#categoryButtons .btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderProducts();
+    }
+
+    function filterProducts() {
+      renderProducts();
+    }
+
+    // Membuka modal opsi varian
+    function openVariantModal(productId) {
+      selectedProduct = products.find(p => p.id === productId);
+      if (!selectedProduct) return;
+
+      document.getElementById('modalProductName').innerText = selectedProduct.nama;
+      
+      const isDrink = selectedProduct.kategori === 'Coffee' || selectedProduct.kategori === 'Non-Coffee';
+      document.getElementById('tempOptionGroup').style.display = isDrink ? 'block' : 'none';
+      document.getElementById('sugarOptionGroup').style.display = isDrink ? 'block' : 'none';
+      document.getElementById('iceOptionGroup').style.display = isDrink ? 'block' : 'none';
+
+      variantModal.show();
+    }
+
+    // Konfirmasi penambahan ke keranjang
+    function confirmAddToCart() {
+      const isDrink = selectedProduct.kategori === 'Coffee' || selectedProduct.kategori === 'Non-Coffee';
+      
+      const cartItem = {
+        cartId: Date.now(),
+        id: selectedProduct.id,
+        nama: selectedProduct.nama,
+        harga: selectedProduct.harga,
+        qty: 1,
+        temp: isDrink ? document.getElementById('valTemp').value : '',
+        sugar: isDrink ? document.getElementById('valSugar').value : '',
+        ice: isDrink ? document.getElementById('valIce').value : '',
+        subtotal: selectedProduct.harga
+      };
+
+      cart.push(cartItem);
+      variantModal.hide();
+      renderCart();
+    }
+
+    // Render tampilan keranjang
+    function renderCart() {
+      const container = document.getElementById('cartItems');
+      
+      if (cart.length === 0) {
+        container.innerHTML = `<p class="text-center text-muted my-4">Keranjang masih kosong</p>`;
+        document.getElementById('totalAmount').innerText = 'Rp 0';
+        return;
+      }
+
+      let grandTotal = 0;
+      container.innerHTML = cart.map((item, index) => {
+        grandTotal += item.subtotal;
+        let variantDetail = [];
+        if (item.temp) variantDetail.push(item.temp);
+        if (item.sugar) variantDetail.push(item.sugar);
+        if (item.ice) variantDetail.push(item.ice);
+
+        return `
+          <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary">
+            <div style="flex: 1;">
+              <div class="fw-bold fs-6">${item.nama}</div>
+              ${variantDetail.length > 0 ? `<small class="text-muted d-block">${variantDetail.join(' | ')}</small>` : ''}
+              <small class="text-warning">Rp ${item.harga.toLocaleString('id-ID')}</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateQty(${index}, -1)">-</button>
+              <span>${item.qty}</span>
+              <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateQty(${index}, 1)">+</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('totalAmount').innerText = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+    }
+
+    function updateQty(index, change) {
+      cart[index].qty += change;
+      if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+      } else {
+        cart[index].subtotal = cart[index].harga * cart[index].qty;
+      }
+      renderCart();
+    }
+
+    function clearCart() {
+      cart = [];
+      renderCart();
+    }
+
+    function toggleTableInput() {
+      const type = document.getElementById('orderType').value;
+      const tableInput = document.getElementById('tableNum');
+      tableInput.style.display = type === 'Dine-in' ? 'block' : 'none';
+    }
+
+    // Kirim pesanan ke Google Sheets melalui Server
+    function submitOrder() {
+      const pelanggan = document.getElementById('custName').value.trim();
+      const tipe = document.getElementById('orderType').value;
+      const meja = document.getElementById('tableNum').value.trim();
+      const metode = document.querySelector('input[name="payMethod"]:checked').value;
+
+      if (!pelanggan) {
+        Swal.fire('Peringatan', 'Silakan masukkan nama pelanggan!', 'warning');
+        return;
+      }
+
+      if (cart.length === 0) {
+        Swal.fire('Peringatan', 'Keranjang pesanan masih kosong!', 'warning');
+        return;
+      }
+
+      const totalAmount = cart.reduce((sum, item) => sum + item.subtotal, 0);
+
+      const payload = {
+        pelanggan: pelanggan,
+        tipe: tipe,
+        meja: meja,
+        metode: metode,
+        items: cart,
+        total: totalAmount
+      };
+
+      // Disable tombol saat proses
+      const btnSubmit = document.getElementById('btnSubmit');
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Memproses...`;
+
+      google.script.run
+        .withSuccessHandler(res => {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Proses Transaksi`;
+
+          if (res.success) {
+            Swal.fire({
+              title: 'Transaksi Berhasil!',
+              text: `ID Transaksi: ${res.trxId}`,
+              icon: 'success',
+              confirmButtonColor: '#D4A373'
+            });
+            clearCart();
+            document.getElementById('custName').value = '';
+            document.getElementById('tableNum').value = '';
+          } else {
+            Swal.fire('Gagal', res.message, 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = `<i class="fa-solid fa-paper-plane me-2"></i> Proses Transaksi`;
+          Swal.fire('Error', 'Terjadi kesalahan sistem: ' + err, 'error');
+        })
+        .processTransaction(payload);
+    }
+  </script>
+</body>
+</html>
